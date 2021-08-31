@@ -60,13 +60,15 @@ def clean_homephone(phone_number)
     formatted
   when 11
     formatted[0] == '1' ? formatted[1..] : bad_number
-  when 12..
+  else
     bad_number
   end
 end
 
-def parse_time(string)
-  Time.strptime(string, '%m/%d/%y %k:%M')
+def parse_time(time_class, string, format)
+  time_class.strptime(string, format)
+rescue ArgumentError
+  nil
 end
 
 def find_top_occurrences(arr, range)
@@ -98,15 +100,14 @@ contents.each do |row|
 
   form_letter = erb_template.result(binding)
 
-  # save_thank_you_letter(id, form_letter)
+  save_thank_you_letter(id, form_letter)
   homephones << clean_homephone(row[:homephone])
 
-  # puts "Old #{row[:homephone]} - new #{homephone}"
-  time = Time.strptime(row[:regdate], regdate_format)
-  date = Date.strptime(row[:regdate], regdate_format)
+  time = parse_time(Time, row[:regdate], regdate_format)
+  date = parse_time(Date, row[:regdate], regdate_format)
 
-  hours << time.hour
-  wdays << date.wday
+  hours << time.hour unless time.nil?
+  wdays << date.wday unless date.nil?
 end
 
 # Save registers' homephone to disk
